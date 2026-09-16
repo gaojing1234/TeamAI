@@ -1,0 +1,86 @@
+# ============================================================================
+# 团队级 MCP 服务器声明
+# ----------------------------------------------------------------------------
+# 谁消费它：
+#   · TeamAI 原生 `teamai mcp inject` —— 只为内置家族（claude/cursor/codex/buddy/opencode）写配置。
+#   · ★ Cline 由 scripts/teamai-mcp-bridge.mjs 消费本文件，生成
+#       ~/.cline/data/settings/cline_mcp_settings.json
+#     因为 detectMcpFormat("cline") 返回 null，TeamAI 不会（也刻意不）猜 Cline 的格式。
+#
+# 字段说明：
+#   tools        —— 本条声明发给哪些客户端；省略 = 全部。桥接器只认含 cline 的条目。
+#   requires     —— 命令是否可用；不满足则跳过并告警（与 TeamAI 行为一致）
+#   cline:       —— Cline 专有字段（disabled / autoApprove）。单独开一个子块，
+#                   避免把客户端私有字段混进团队级公共声明。
+#   ${VAR}       —— 占位符。绝不写死机器路径，也绝不写明文密钥。
+#                   解析优先级（低 → 高）：
+#                     本仓库 env/env.yaml  <  本机 ~/.teamai/pcs-cline-bridge.json
+#                     <  --var KEY=VALUE  <  进程环境变量
+#                   解析不到 → 跳过该 server 并告警，不写半截配置。
+# ============================================================================
+
+servers:
+  # ---------------------------------------------------------------------------
+  # 总控：Cline 唯一该看到的 MCP 入口（7 工具 Facade）。
+  # 子智能体**不**经 MCP 暴露 —— 这是方案的设计铁律，靠这个单点入口保证。
+  # ---------------------------------------------------------------------------
+  - name: pcs-orchestrator
+    description: 研发域代码生成助手 · 总控（DAG / 卡点 / 失败回环，7 工具）
+    transport: stdio
+    command: ${PCS_NODE}
+    args:
+      - ${PCS_AGENT_ROOT}/src/server.mjs
+    env:
+      PCS_LLM_MODE: mock
+      PCS_LLM_BASE_URL: http://127.0.0.1:11434/v1
+      PCS_LLM_MODEL: qwen2.5-coder:14b
+      PCS_LLM_KEY: ""
+    requires:
+      - ${PCS_NODE}
+    tools:
+      - cline
+    cline:
+      disabled: false
+      # 只放纯只读工具。判据："这个工具会不会改状态？"
+      # approve_gate 一旦出现在这里，人工卡点就形同虚设 —— 不要加。
+      autoApprove:
+        - get_run_status
+        - list_artifacts
+        - get_artifact
+
+  # ---------------------------------------------------------------------------
+  # 起步脚手架（第一步验链路用的独立需求分析 Server）。
+  # 默认 disabled：它把子智能体直接摆到客户端面前，破坏 Facade 门面，且与总控产生路由歧义。
+  # 保留声明是为了"想用随时打开"，而不是让它默认生效。
+  # ---------------------------------------------------------------------------
+  - name: pcs-requirement
+    description: 需求分析智能体（独立挂载 · 起步脚手架，默认关闭）
+    transport: stdio
+    command: ${PCS_NODE}
+    args:
+      - ${PCS_AGENT_ROOT}/src/mcp/requirement-server.mjs
+    env:
+      PCS_LLM_MODE: mock
+      PCS_LLM_BASE_URL: http://127.0.0.1:11434/v1
+      PCS_LLM_MODEL: qwen2.5-coder:14b
+      PCS_LLM_KEY: ""
+    requires:
+      - ${PCS_NODE}
+    tools:
+      - cline
+    cline:
+      disabled: true
+      autoApprove:
+        - list_requirement_contracts
+        - read_requirement_contract
+
+  # ---------------------------------------------------------------------------
+  # 反例（不写入，用来证明桥接器的过滤是对的）：
+  # 明确只给 claude 的条目，桥接器必须跳过。
+  # 想验证时把 tools 改成 [cline] 即可，删掉注释就能看到它出现在配置里。
+  # ---------------------------------------------------------------------------
+  # - name: demo-claude-only
+  #   transport: stdio
+  #   command: npx
+  #   args: ['-y', '@acme/demo-mcp']
+  #   tools: [claude]

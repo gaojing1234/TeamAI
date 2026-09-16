@@ -1,0 +1,49 @@
+# ============================================================================
+# TeamAI 团队仓库配置（放在团队仓库根目录）
+# ----------------------------------------------------------------------------
+# 生成/维护说明：本文件是**手工维护的设计文件**，不要用脚本覆盖。
+# 同一目录下的 rules/ 是 scripts 从 pcs-agent/cline/ 同步过来的副本。
+# ============================================================================
+
+team: pcs-agent-team
+# 团队仓库地址（2026-09-16 已填真实地址）。teamai init 要求 owner/repo 或 https/git@ 形式，
+# 本地目录与 file:// 一律被拒（实测：Unrecognized GitHub repo format）。
+repo: https://github.com/gaojing1234/TeamAI
+provider: github
+
+sharing: {}
+
+# ============================================================================
+# ★ 本文件最要紧的一段：把 Cline 登记成一等客户端
+# ----------------------------------------------------------------------------
+# 背景（都是读 dist/index.js 得到的事实，不是文档推断）：
+#   · TeamAI 内置 17 个客户端 id，**没有 cline**。
+#   · skills / rules / claudemd 的写入是**按路径通用**的 → 加一条 cline 条目即可生效。
+#   · MCP 的写入由 detectMcpFormat(tool) 决定，它是一张**硬编码**家族表
+#     （claude / cursor / codex / buddy / opencode），未知 id 返回 null → TeamAI 直接跳过。
+#     所以 Cline 的 MCP 走 scripts/teamai-mcp-bridge.mjs，不在这里配。
+#
+# ⚠ 一个必须知道的行为：zod 的 .default() 只在键**缺失**时生效。
+#   也就是说 —— 写了 toolPaths，内置那 17 个默认工具就**整体消失**，只剩下你写的。
+#   这正好就是我们要的「只分发给 Cline」。将来要加回别的客户端，在这里补条目即可。
+# ============================================================================
+toolPaths:
+  cline:
+    # Cline 会读工作区根下 .clinerules/**/*.md（目录形态）与单文件 .clinerules，两者同时生效
+    rules: ".clinerules"
+    # Cline 的技能目录（按需加载）
+    skills: ".cline/skills"
+    # Cline 会读工作区根的 AGENTS.md
+    claudemd: "AGENTS.md"
+    # 刻意不写 settings —— Cline 没有生命周期钩子体系。
+    # 不写 = 钩子环节被干净跳过（与内置的 joycode 同样处理），不会生成幽灵文件。
+    # 刻意不写 mcp —— detectMcpFormat 不认 cline，写了也不会被写入。
+
+  # 需要时把 TeamAI 内置客户端加回来（写了 toolPaths 就必须逐个列出）：
+  # workbuddy:
+  #   skills: ".workbuddy/skills"
+  #   rules: ".workbuddy/rules"
+  #   settings: ".workbuddy/settings.json"
+  #   claudemd: "AGENTS.md"
+  #   mcp: ".workbuddy/mcp.json"
+  #   mcpProject: ".workbuddy/mcp.json"
