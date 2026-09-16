@@ -1,0 +1,30 @@
+# ============================================================================
+# 角色清单（teamai init / pull 的必需文件）
+# ----------------------------------------------------------------------------
+# 事实（读 dist/index.js 得到）：
+#   · loadRolesManifest() 读 <团队仓库>/manifest/roles.yaml，**文件缺失直接抛错**
+#     （Roles manifest not found）—— 所以这个文件不是可选项。
+#   · promptForRoleProfile() 的逻辑：
+#       给了 --role  → 按 id 精确匹配（不匹配则报可用 id 列表）
+#       roles 只有 1 个 → **自动选中，零交互提示**
+#       否则 → 弹出 "Primary role (number): " 让人肉选 → 会挂住无人值守的调用
+#     故我们**刻意只放一个角色**，init 全流程无交互。
+#   · resources.skills 里的命名空间决定「哪些 skills/<ns>/<name>/ 会被同步」。
+#     命名空间外的技能**不会被拉取**（scanRoleAwareSkills 只扫 namespaces.skills）。
+#     所以技能必须放在 skills/pcs/ 下，并在下面登记 pcs。
+#
+# 校验规则（RoleSchema）：id 必填非空；resources.knowledge / resources.skills
+#   均为**必填数组**（可以为空数组，但不能省略）。
+# ============================================================================
+
+version: 1
+
+roles:
+  - id: pcs_dev
+    description: PCS/EMS 研发域 · 嵌入式控制与仿真模型开发
+    resources:
+      # 本团队暂不通过 roles 分发知识库条目（knowledge 通道保留但为空）。
+      knowledge: []
+      # ★ 必须与仓库内 skills/<命名空间>/ 目录名一致，否则技能不会被同步到客户端。
+      skills:
+        - pcs
