@@ -31,10 +31,18 @@ toolPaths:
   cline:
     # Cline 会读工作区根下 .clinerules/**/*.md（目录形态）与单文件 .clinerules，两者同时生效
     rules: ".clinerules"
-    # Cline 的技能目录（按需加载）
+    # Cline 的技能目录。★ Cline 要求**目录形态**：.cline/skills/<name>/SKILL.md
+    #   （已核对 Cline 4.1.17 的两套 bundle：legacy 与 next 都有
+    #    clineruleSkillsDir/clineSkillsDir/claudeSkillsDir/agentsSkillsDir 四组常量，
+    #    读取处为 join(dir,"SKILL.md")。扁平 .md 文件不会被加载。）
     skills: ".cline/skills"
-    # Cline 会读工作区根的 AGENTS.md
-    claudemd: "AGENTS.md"
+    # ★ 刻意不写 claudemd —— 它不是"配置少了"，而是本版本里这条通道与 git 分发无关：
+    #   dist/index.js 里的 syncClaudemd() **只被平台命令通道 applyCommand() 调用**
+    #   （两处调用点都在命令处理里）；`teamai pull` 全程不碰它，pullAllRules()
+    #   里对 toolPath.claudemd 的引用只做**历史遗留段落清理**。
+    #   实测佐证：仓库里放好 claudemd/pcs-agent.md 后跑 pull，工作区仍不产出 AGENTS.md。
+    #   留着这个键 = 声明一条永远不生效的通道 → 故删掉，保持配置与事实一致。
+    #   真要给工作区一个根级入口，把它做成第 4 条 rule 即可（rules 通道是通的）。
     # 刻意不写 settings —— Cline 没有生命周期钩子体系。
     # 不写 = 钩子环节被干净跳过（与内置的 joycode 同样处理），不会生成幽灵文件。
     # 刻意不写 mcp —— detectMcpFormat 不认 cline，写了也不会被写入。
