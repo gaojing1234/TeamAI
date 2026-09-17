@@ -8,7 +8,8 @@
 #     因为 detectMcpFormat("cline") 返回 null，TeamAI 不会（也刻意不）猜 Cline 的格式。
 #
 # 字段说明：
-#   tools        —— 本条声明发给哪些客户端；省略 = 全部。桥接器只认含 cline 的条目。
+#   tools        —— 本条声明发给哪些客户端；省略 = 全部。桥接器只认含 cline 的条目；
+#                   含 codex 的条目由 TeamAI 原生 `teamai mcp inject` 写入。
 #   requires     —— 命令是否可用；不满足则跳过并告警（与 TeamAI 行为一致）
 #   cline:       —— Cline 专有字段（disabled / autoApprove）。单独开一个子块，
 #                   避免把客户端私有字段混进团队级公共声明。
@@ -21,8 +22,15 @@
 
 servers:
   # ---------------------------------------------------------------------------
-  # 总控：Cline 唯一该看到的 MCP 入口（7 工具 Facade）。
+  # 总控：客户端唯一该看到的 MCP 入口（7 工具 Facade）。
   # 子智能体**不**经 MCP 暴露 —— 这是方案的设计铁律，靠这个单点入口保证。
+  # ---------------------------------------------------------------------------
+  # 2026-09-17 起同时分发给 Codex（tools 加 codex）。两点说明：
+  #   · Codex 侧写出的形态是 [mcp_servers.pcs-orchestrator]（stdio → command + args），
+  #     由 renderCodexBlock() 生成、经 spliceCodexBlock() 外科式插入 ~/.codex/config.toml。
+  #   · 下面的 cline: 子块是 **Cline 专有字段**，codex 不消费 —— 也就是 autoApprove
+  #     那三个只读工具在 Codex 上**不生效**，每次调用按 Codex 自己的审批策略走。
+  #     对卡点设计来说这只更保守（approve_gate 本就不该被自动放行），可以接受。
   # ---------------------------------------------------------------------------
   - name: pcs-orchestrator
     description: 研发域代码生成助手 · 总控（DAG / 卡点 / 失败回环，7 工具）
@@ -39,6 +47,7 @@ servers:
       - ${PCS_NODE}
     tools:
       - cline
+      - codex
     cline:
       disabled: false
       # 只放纯只读工具。判据："这个工具会不会改状态？"
@@ -52,6 +61,12 @@ servers:
   # 起步脚手架（第一步验链路用的独立需求分析 Server）。
   # 默认 disabled：它把子智能体直接摆到客户端面前，破坏 Facade 门面，且与总控产生路由歧义。
   # 保留声明是为了"想用随时打开"，而不是让它默认生效。
+  # ---------------------------------------------------------------------------
+  # ★ 刻意**不给 codex** 加这条 tools 条目（2026-09-17）：
+  #   "默认关闭"是靠 cline.disabled: true 实现的，而那是 **Cline 专有字段**。
+  #   Codex 没有对应开关 —— TeamAI 只会老老实实写出 [mcp_servers.pcs-requirement]，
+  #   一旦写进去就是**默认启用**，等于把子智能体直接摆到 Codex 面前，正好破坏上面那条铁律。
+  #   所以 tools 保持只有 cline，让这条在 Codex 侧根本不存在。
   # ---------------------------------------------------------------------------
   - name: pcs-requirement
     description: 需求分析智能体（独立挂载 · 起步脚手架，默认关闭）

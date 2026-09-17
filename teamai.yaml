@@ -47,6 +47,45 @@ toolPaths:
     # 不写 = 钩子环节被干净跳过（与内置的 joycode 同样处理），不会生成幽灵文件。
     # 刻意不写 mcp —— detectMcpFormat 不认 cline，写了也不会被写入。
 
+  # ============================================================================
+  # Codex（2026-09-17 新增）
+  # ----------------------------------------------------------------------------
+  # 与 cline 不同，**codex 是 TeamAI 内置的 17 个客户端 id 之一**，且有原生适配：
+  #   · toolPaths 默认表里已有一条 codex 映射（dist/index.js:926）
+  #   · detectMcpFormat("codex") 返回 "codex" → MCP 有专用写入路径
+  #   · reconcileCodexFormat() 处理 Codex 专有的 hooks JSON 结构
+  # 我们这里写的是**修正版**，与内置默认有一处实质差异：去掉了 rules（见下）。
+  # ============================================================================
+  codex:
+    # 用户级技能目录。形态为 <name>/SKILL.md，frontmatter 只需 name + description，
+    #   与团队仓库 skills/<ns>/<name>/SKILL.md 天然一致，无需转换。
+    #   （已核对 Codex 自带技能 ~/.codex/skills/.system/skill-creator/SKILL.md 的格式）
+    skills: ".codex/skills"
+    # 生命周期钩子。Codex 用 JSON，TeamAI 有 reconcileCodexFormat() 专门适配。
+    #   ⚠ Codex 侧需要 review/trust 这些 hook 才会真正执行（TeamAI 也会打这条提醒）。
+    settings: ".codex/hooks.json"
+    # 子智能体。仓库暂无 agents/ 目录 → 当前为空操作，留键以便将来直接生效。
+    agents: ".codex/agents"
+    # MCP：Codex 支持 stdio 与 streamable HTTP（无 SSE）。
+    #   写入走 spliceCodexBlock()，是**外科式文本插入** —— 只替换 [mcp_servers.<name>]
+    #   段，绝不重写整个 config.toml，因此不会破坏已有的 model / model_provider /
+    #   experimental_bearer_token 等配置（这点与 claude 系的全量重写不同）。
+    #   另：sharing.mcp 未开 autoApply 时 pull 不会自动注入，需显式 `teamai mcp inject`。
+    mcp: ".codex/config.toml"
+    # ★ 刻意不写 rules —— 这不是"少配了一条"，而是**语义错位**。
+    #   Codex 有两套彼此独立的 rules，名字撞了但含义完全不同：
+    #     · 协作规范（markdown，即本仓库 rules/*.md 这类）→ 入口是 **AGENTS.md**，
+    #       Codex 启动时按 全局 → 仓库根 → 当前目录 拼成指令链
+    #     · 命令权限策略（Starlark，prefix_rule(pattern=..., decision=...)）→ 入口是
+    #       **.codex/rules/*.rules**，控制哪些命令能在沙箱外跑
+    #   TeamAI 内置默认把 codex.rules 映射到 ".codex/rules"，那正是**命令权限目录**。
+    #   把 markdown 写进去，Codex 只加载 *.rules → 我们的规则既不生效也不报错，
+    #   **静默失效**；万一实现改成"加载目录下全部文件"，markdown 还会让 Starlark 解析报错。
+    #   两种结局都不可接受，所以宁可不写。
+    #   → 规范改由 scripts/ 之外的**本机一次性写入 ~/.codex/AGENTS.md** 承担，
+    #     见仓库根 README 或 .teamai 记录的部署说明。rules 通道保持干净。
+    # 依据：developers.openai.com/codex/rules 与 /codex/guides/agents-md
+
   # 需要时把 TeamAI 内置客户端加回来（写了 toolPaths 就必须逐个列出）：
   # workbuddy:
   #   skills: ".workbuddy/skills"
