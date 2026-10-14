@@ -1,0 +1,283 @@
+{
+  "skill_name": "嵌入式开发需求分析技能",
+  "skill_slug": "embedded-development-requirement-analysis",
+  "template_fields": [
+    "REQ_ID",
+    "需求名称",
+    "开发方向",
+    "需求类型",
+    "需求描述",
+    "关键参数",
+    "单位/量纲",
+    "适用条件",
+    "输入/触发",
+    "输出/动作",
+    "接口对象",
+    "时序/响应",
+    "数据格式",
+    "精度/定点策略",
+    "资源限制",
+    "失败/降级策略",
+    "验收标准",
+    "依据标准",
+    "来源",
+    "优先级",
+    "状态",
+    "依赖REQ",
+    "待确认问题",
+    "责任人",
+    "更新时间"
+  ],
+  "directions": {
+    "DSP": {
+      "label": "DSP",
+      "scene_label": "电网与功率控制",
+      "keywords": [
+        "DSP",
+        "电网",
+        "并网",
+        "逆变器控制",
+        "逆变控制",
+        "控制算法",
+        "电流环",
+        "电压环",
+        "功率环",
+        "锁相",
+        "THD",
+        "谐波",
+        "cos φ",
+        "cosphi",
+        "功率因数",
+        "LVRT",
+        "HVRT",
+        "MPPT",
+        "无功",
+        "有功",
+        "故障穿越",
+        "孤岛"
+      ],
+      "scenes": [
+        {
+          "name": "电网并网指标",
+          "keywords": ["THD", "谐波", "功率因数", "cos φ", "并网", "电网"],
+          "requirement_type": "性能",
+          "analysis_focus": "明确谐波测量点、工况、统计窗口、功率因数范围、适用标准和恢复策略。",
+          "key_parameters": ["THD", "功率因数", "有功/无功范围", "测量工况", "响应时间"],
+          "typical_risk": "只写指标名称，缺少测量点、工况和判据。",
+          "suggested_agent": "DSP电网与控制分析Agent"
+        },
+        {
+          "name": "MPPT与效率",
+          "keywords": ["MPPT", "效率", "最大功率点", "遮挡", "温度曲线"],
+          "requirement_type": "性能",
+          "analysis_focus": "区分静态MPPT效率、动态MPPT效率、扫描步长、局部极值和温度/辐照测试曲线。",
+          "key_parameters": ["MPPT效率", "静态/动态效率", "扫描周期", "辐照/温度曲线", "跟踪误差"],
+          "typical_risk": "静态和动态效率未区分，导致验收不可执行。",
+          "suggested_agent": "DSP电网与控制分析Agent"
+        },
+        {
+          "name": "LVRT/HVRT与故障穿越",
+          "keywords": ["LVRT", "HVRT", "故障穿越", "电压跌落", "过电压", "欠压"],
+          "requirement_type": "保护/性能",
+          "analysis_focus": "明确电压曲线、进入阈值、持续时间、无功支撑、恢复路径、保护退出条件和测试标准。",
+          "key_parameters": ["电压跌落深度", "持续时间", "无功电流", "恢复时间", "标准版本"],
+          "typical_risk": "曲线缺失，保护逻辑和验收判据无法落地。",
+          "suggested_agent": "DSP电网与控制分析Agent"
+        },
+        {
+          "name": "控制环与运行模式",
+          "keywords": ["电流环", "电压环", "功率环", "锁相", "状态机", "并网", "离网", "充电", "放电"],
+          "requirement_type": "功能/性能",
+          "analysis_focus": "明确运行模式、状态机、控制周期、环路带宽、超调、稳态误差和模式切换边界。",
+          "key_parameters": ["控制周期", "环路带宽", "超调", "稳态误差", "切换条件"],
+          "typical_risk": "模式切换、异常恢复和控制环指标未定义。",
+          "suggested_agent": "DSP电网与控制分析Agent"
+        }
+      ]
+    },
+    "FPGA": {
+      "label": "FPGA",
+      "scene_label": "高速采样与硬件保护",
+      "keywords": [
+        "FPGA",
+        "ADC",
+        "采样率",
+        "采样链路",
+        "SNR",
+        "抖动",
+        "硬件保护",
+        "硬件跳闸",
+        "跳闸",
+        "过流保护",
+        "同步采样",
+        "时间戳",
+        "GOOSE",
+        "EtherCAT",
+        "EtherCAN",
+        "通信加速",
+        "时钟域"
+      ],
+      "scenes": [
+        {
+          "name": "ADC采样链路",
+          "keywords": ["ADC", "采样率", "采样链路", "SNR", "抖动", "同步采样"],
+          "requirement_type": "性能/接口",
+          "analysis_focus": "明确ADC通道、采样率、分辨率、SNR/ENOB、抖动、同步误差、滤波、校准和数据格式。",
+          "key_parameters": ["采样率", "分辨率", "SNR", "抖动", "同步误差", "ADC延迟"],
+          "typical_risk": "采样指标与DSP控制周期不匹配。",
+          "suggested_agent": "FPGA采样与保护分析Agent"
+        },
+        {
+          "name": "硬件保护与跳闸",
+          "keywords": ["硬件保护", "硬件跳闸", "跳闸", "过流", "过压", "保护", "故障标志"],
+          "requirement_type": "保护",
+          "analysis_focus": "明确保护判据、阈值、去抖、最坏响应时间、动作输出、故障码和恢复策略。",
+          "key_parameters": ["保护阈值", "去抖时间", "响应时间", "故障码", "动作结果"],
+          "typical_risk": "保护只有动作名称，没有触发条件和响应时间。",
+          "suggested_agent": "FPGA采样与保护分析Agent"
+        },
+        {
+          "name": "通信加速与实时网络",
+          "keywords": ["GOOSE", "EtherCAT", "EtherCAN", "通信加速", "实时通信", "时间戳"],
+          "requirement_type": "接口/性能",
+          "analysis_focus": "确认协议名称、时序、优先级、吞吐、超时、重传、时间戳和主从角色。",
+          "key_parameters": ["协议类型", "周期", "超时", "吞吐", "时间戳精度"],
+          "typical_risk": "EtherCAN等术语含义不清，导致协议和时序误判。",
+          "suggested_agent": "FPGA采样与保护分析Agent"
+        },
+        {
+          "name": "时钟域与资源约束",
+          "keywords": ["时钟", "跨域", "CDC", "LUT", "FF", "BRAM", "FPGA资源"],
+          "requirement_type": "约束",
+          "analysis_focus": "明确时钟域、跨域同步、复位策略、资源利用率和时序收敛目标。",
+          "key_parameters": ["时钟频率", "跨域信号", "资源利用率", "时序裕量"],
+          "typical_risk": "资源和跨域问题在布局布线阶段才暴露。",
+          "suggested_agent": "FPGA采样与保护分析Agent"
+        }
+      ]
+    },
+    "MCU": {
+      "label": "MCU",
+      "scene_label": "协议与本地数据管理",
+      "keywords": [
+        "MCU",
+        "RS485",
+        "CAN",
+        "Modbus",
+        "Modbus RTU",
+        "Modbus TCP",
+        "MQTT",
+        "TCP/IP",
+        "Flash",
+        "历史数据",
+        "事件记录",
+        "故障录波",
+        "寄存器",
+        "协议",
+        "存储",
+        "数据存储",
+        "录播",
+        "录波"
+      ],
+      "scenes": [
+        {
+          "name": "外部通信协议",
+          "keywords": ["RS485", "CAN", "Modbus", "MQTT", "TCP/IP", "协议", "通信", "寄存器"],
+          "requirement_type": "接口",
+          "analysis_focus": "明确协议角色、波特率、地址、寄存器/点表、数据映射、超时、重传、错误码和安全策略。",
+          "key_parameters": ["协议", "波特率/周期", "寄存器地址", "超时", "错误码", "响应时间"],
+          "typical_risk": "只写协议名称，缺少寄存器表和异常处理。",
+          "suggested_agent": "MCU协议与存储分析Agent"
+        },
+        {
+          "name": "Flash与本地存储",
+          "keywords": ["Flash", "存储", "本地存储", "历史数据", "事件记录", "故障录波", "录波"],
+          "requirement_type": "存储",
+          "analysis_focus": "明确变量、采样周期、数据格式、容量、保留时长、分区、擦写寿命、掉电保护和覆盖策略。",
+          "key_parameters": ["变量数", "采样率", "保留天数", "容量", "擦写次数", "掉电保护"],
+          "typical_risk": "30天曲线或故障录波没有容量和寿命估算。",
+          "suggested_agent": "MCU协议与存储分析Agent"
+        },
+        {
+          "name": "事件与故障追溯",
+          "keywords": ["事件", "故障", "录波", "日志", "告警", "历史"],
+          "requirement_type": "存储/功能",
+          "analysis_focus": "明确事件触发源、等级、字段、前置/后置数据、时间同步、查询方式和保留策略。",
+          "key_parameters": ["触发源", "事件等级", "前置/后置时间", "采样率", "保留策略"],
+          "typical_risk": "故障发生后数据不足以复盘。",
+          "suggested_agent": "MCU协议与存储分析Agent"
+        }
+      ]
+    },
+    "Linux": {
+      "label": "Linux",
+      "scene_label": "HMI、云端与数据服务",
+      "keywords": [
+        "Linux",
+        "HMI",
+        "云",
+        "云端",
+        "MQTT上送",
+        "IEC 104",
+        "IEC104",
+        "DL/T 695",
+        "DLT695",
+        "数据库",
+        "本地曲线",
+        "30天",
+        "网关",
+        "OTA",
+        "远程",
+        "历史曲线"
+      ],
+      "scenes": [
+        {
+          "name": "HMI与本地监控",
+          "keywords": ["HMI", "本地曲线", "页面", "监控", "告警", "曲线"],
+          "requirement_type": "功能",
+          "analysis_focus": "明确页面、关键操作、权限、告警等级、曲线变量、采样粒度、刷新周期和查询性能。",
+          "key_parameters": ["页面范围", "权限", "告警等级", "曲线变量", "刷新周期"],
+          "typical_risk": "HMI只描述展示，没有数据更新和权限边界。",
+          "suggested_agent": "Linux HMI与云端分析Agent"
+        },
+        {
+          "name": "云端通信与协议网关",
+          "keywords": ["云", "云端", "MQTT上送", "IEC 104", "DL/T 695", "网关", "上送"],
+          "requirement_type": "接口",
+          "analysis_focus": "明确协议映射、点表、上送周期、QoS、断线续传、时间同步、安全认证和远程命令权限。",
+          "key_parameters": ["协议", "点表", "上送周期", "QoS", "断线续传", "权限"],
+          "typical_risk": "云端协议只写名称，缺少数据模型和断网策略。",
+          "suggested_agent": "Linux HMI与云端分析Agent"
+        },
+        {
+          "name": "历史数据与系统服务",
+          "keywords": ["30天", "历史数据", "数据库", "文件", "日志", "OTA", "升级"],
+          "requirement_type": "存储/系统",
+          "analysis_focus": "明确数据模型、压缩、索引、容量、查询性能、备份、升级、回滚和可用性。",
+          "key_parameters": ["变量数", "采样率", "容量", "压缩比", "查询时间", "升级/回滚"],
+          "typical_risk": "长期运行后存储空间、查询性能或升级回滚不可控。",
+          "suggested_agent": "Linux HMI与云端分析Agent"
+        }
+      ]
+    }
+  },
+  "numeric_patterns": [
+    "[0-9]+(?:\\.[0-9]+)?\\s*%|[0-9]+(?:\\.[0-9]+)?\\s*p\\.u\\.",
+    "[0-9]+(?:\\.[0-9]+)?\\s*(?:ms|us|ns|s|天|秒|分钟|小时)",
+    "[0-9]+(?:\\.[0-9]+)?\\s*(?:Hz|kHz|MHz|V|A|W|kW|MW|dB|MB|GB)",
+    "[0-9]+(?:\\.[0-9]+)?\\s*(?:点|个|通道|寄存器)"
+  ],
+  "default_priority_by_type": {
+    "保护": "P0",
+    "性能": "P0",
+    "接口": "P1",
+    "功能": "P1",
+    "存储": "P1",
+    "约束": "P1"
+  },
+  "global_open_questions": [
+    "是否有客户原文、行业标准、产品规格书或会议纪要可以作为需求来源？",
+    "该需求属于功能、性能、接口、存储、保护还是约束类型？",
+    "是否已经给出可测的验收标准？若没有，测试工况和通过判据是什么？"
+  ]
+}
